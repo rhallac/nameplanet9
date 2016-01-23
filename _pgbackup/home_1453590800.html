@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <title>Dashboard Template for Bootstrap</title>
+        <!-- Bootstrap core CSS -->
+        <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
+        <!-- Custom styles for this template -->
+        <link href="dashboard.css" rel="stylesheet">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+        <script src='https://cdn.firebase.com/js/client/2.2.1/firebase.js'></script>
+        <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+    </head>
+    <body>
+        <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">NamePlanet9</a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li>
+</li>
+                        <li>
+</li>
+                        <li>
+</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-3 sidebar">
+                    <ul class="nav nav-sidebar">
+                        <li>
+</li>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Upvotes</th>
+                                    <th>Downvotes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Becca</td>
+                                    <td>10000</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr>
+                                    <td>David</td>
+                                    <td>0</td>
+                                    <td>10000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <li>
+</li>
+                    </ul>
+                </div>
+                <div class="col-sm-9 col-sm-offset-3 main">
+                    <h1 class="page-header text-center">Dashboard</h1>
+                    <div class="row placeholders">
+                        <button type="button" class="btn btn-default" id='voteUp' onclick="voteUp()">Upvote</button>
+                        <button type="button" class="btn btn-default" id='voteDown' onclick="voteDown()">Downvote</button>
+                    </div>
+                    <h3>Add your own planet name!</h3>
+                    <div class="table-responsive">
+</div>
+                    <div class="form-group"> 
+                        <input type="text" class="form-control" id="nameInput" placeholder="What shall you name it!?!?!?">                         
+                    </div>                     
+                    <button type="submit" class="btn" id='add' onclick="add()">Submit</button>                     
+                    <script>
+
+      var myDataRef = new Firebase('https://luminous-fire-6278.firebaseio-demo.com/');
+      myDataRef.remove()
+
+      var voteFreq = 5; //How often you can vote
+
+      myDataRef.child("overallcounter").once('value',function(snapshot){
+
+          if (snapshot.val() == null){
+            myDataRef.child('overallcounter').set({total : 1});
+          }
+
+      })
+
+      var names = myDataRef.child("names")
+      var overallcounter = myDataRef.child("overallcounter")
+    
+      function voteUp(){
+        var name = $('#nameInput').val();
+        myDataRef.child("names").once('value',function(snapshot){
+
+          if (snapshot.val() == null){
+            names.child(name).set({upvotes : 1, downvotes : 0});
+          } else {
+            names.child(name).update({ upvotes : snapshot.child(name).val().upvotes + 1, 
+                                        downvotes : snapshot.child(name).val().downvotes});
+          }
+          console.log(snapshot.val());  
+        })
+          myDataRef.child("overallcounter").once('value',function(snapshot){
+            overallcounter.update({total : snapshot.val().total + 1});
+            if (snapshot.val().total % voteFreq == 0) {
+              unhideTextBox();
+            } else {
+              hideTextBox();
+            }
+            console.log( snapshot.val().total)
+          })
+        
+
+      
+      }
+
+      function add(){
+        var name = $('#nameInput').val();
+        myDataRef.child("names").once('value',function(snapshot){
+
+          if (snapshot.val() == null){
+            names.child(name).set({upvotes : 1, downvotes : 0});
+          } else {
+            names.child(name).update({ upvotes : snapshot.child(name).val().upvotes + 1, 
+                                        downvotes : snapshot.child(name).val().downvotes});
+          }
+          console.log(snapshot.val());  
+        })
+          myDataRef.child("overallcounter").once('value',function(snapshot){
+            overallcounter.update({total : snapshot.val().total + 1});
+            if (snapshot.val().total % voteFreq == 0) {
+              unhideTextBox();
+            } else {
+              hideTextBox();
+            }
+            console.log( snapshot.val().total)
+          })
+          
+
+      
+      }
+
+        function voteDown(){
+        var name = $('#nameInput').val();
+        myDataRef.child("names").once('value',function(snapshot){
+
+          if (snapshot.val() == null){
+            names.child(name).set({upvotes : 0, downvotes : 1});
+          } else {
+            names.child(name).update({ upvotes : snapshot.child(name).val().upvotes, 
+                                        downvotes : snapshot.child(name).val().downvotes + 1 });
+          }
+          console.log(snapshot.val());  
+        })
+          myDataRef.child("overallcounter").once('value',function(snapshot){
+            overallcounter.update({total : snapshot.val().total + 1});
+            if (snapshot.val().total % voteFreq == 0) {
+              unhideTextBox();
+            } else {
+              hideTextBox();
+            }
+            console.log( snapshot.val().total)
+          })
+      }
+
+      function hideTextBox(){
+ 
+      }
+
+      function unhideTextBox(){
+ 
+      }
+                        
+      function displayChatMessage(name, upvotes, downvotes) {
+        $('<div/>').text(downvotes).prepend($('<em/>').text(name+' Likes '+upvotes+' ')).appendTo($('#messagesDiv'));
+        $('#messagesDiv')[0].scrollTop = $('#messagesDiv')[0].scrollHeight;
+      };
+    </script>
+                </div>
+            </div>
+        </div>
+        <!-- Bootstrap core JavaScript
+    ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="assets/js/jquery.min.js"></script>
+        <script src="bootstrap/js/bootstrap.min.js"></script>
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <script src="assets/js/ie10-viewport-bug-workaround.js"></script>
+    </body>
+</html>
