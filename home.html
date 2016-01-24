@@ -91,7 +91,7 @@
 
       var myDataRef = new Firebase('https://luminous-fire-6278.firebaseio-demo.com/');
       myDataRef.remove()
-
+      var numEl = 0;
       var voteFreq = 5; //How often you can vote
 
       myDataRef.child("overallcounter").once('value',function(snapshot){
@@ -105,7 +105,7 @@
       myDataRef.child("numElements").once('value',function(snapshot){
 
           if (snapshot.val() == null){
-            myDataRef.child('numElements').set({total : 0});
+            myDataRef.child('numElements').set({total : 1});
           }
 
       })
@@ -158,6 +158,10 @@
           if (snapshot.child(name).val() == null){
             names.child(name).set({upvotes : 1, downvotes : 0, weights : 1});
             didwork = 1
+            myDataRef.child("numElements").once('value',function(snapshot){
+            numElements.update({total : snapshot.val().total + 1});
+            console.log('numElements '+snapshot.val().total);
+            })
 
           } else {
             var new_upvotes = snapshot.child(name).val().upvotes + 1;
@@ -179,14 +183,7 @@
             } else {
               hideTextBox();
             }            
-          })
-          if (didwork == 1){
-            myDataRef.child("numElements").once('value',function(snapshot){
-            numElements.update({total : snapshot.val().total + 1});
-            console.log('numElements '+snapshot.val().total)
-          })
-          }
-        
+          }) 
 
       changeWord();
    
@@ -238,18 +235,33 @@
       }
 
       function changeWord(){
-
-
         var newWord = getRandomWord()
         $("#nameToVoteOn").text(newWord);
+      }
+
+      function getNumEl(){
+        myDataRef.child("numElements").once('value',function(snapshot){
+            numEl = snapshot.val().total;
+            console.log(numEl);
+            return numEl;
+        })
       }
 
       function getRandomWord(){
         var d = new Date();
         var n = d.getTime();
+        numEl = getNumEl();
+
+        // myDataRef.child("numElements").once('value',function(snapshot){
+        //     numEl = snapshot.val().total;
+        //     console.log(numEl);
+        
+        console.log('numEl'+numEl)
+        var index = n % numEl;
         //n mod num elements in database
         //resulting index is new word
         return 'hehehehehe';
+        //})
       }
                    
 
