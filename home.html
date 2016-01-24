@@ -75,7 +75,7 @@
                     </ul>
                 </div>
                 <div class="col-sm-9 col-sm-offset-3 main">
-                    <h1 class="page-header text-center">Dashboard</h1>
+                    <h1 class="page-header text-center" id='nameToVoteOn'>Dashboard</h1>
                     <div class="row placeholders">
                         <button type="button" class="btn btn-default" id='voteUp' onclick="voteUp()">Upvote</button>
                         <button type="button" class="btn btn-default" id='voteDown' onclick="voteDown()">Downvote</button>
@@ -102,18 +102,35 @@
 
       })
 
+      myDataRef.child("numElements").once('value',function(snapshot){
+
+          if (snapshot.val() == null){
+            myDataRef.child('numElements').set({total : 0});
+          }
+
+      })
+
+
       var names = myDataRef.child("names")
       var overallcounter = myDataRef.child("overallcounter")
+      var numElements = myDataRef.child("numElements")
     
       function voteUp(){
         var name = $('#nameInput').val();
         myDataRef.child("names").once('value',function(snapshot){
-
+          
           if (snapshot.val() == null){
-            names.child(name).set({upvotes : 1, downvotes : 0});
+            names.child(name).set({upvotes : 1, downvotes : 0, weights : 1});
           } else {
-            names.child(name).update({ upvotes : snapshot.child(name).val().upvotes + 1, 
-                                        downvotes : snapshot.child(name).val().downvotes});
+            var new_upvotes = snapshot.child(name).val().upvotes + 1;
+            var new_downvotes = snapshot.child(name).val().downvotes;
+
+            var weight = calculateWeight(new_upvotes,new_downvotes);
+            weight = 0;
+            names.child(name).update({ upvotes : new_upvotes, 
+                                        downvotes : new_downvotes,
+                                        weights : weight
+                                      });
           }
           console.log(snapshot.val());  
         })
@@ -125,23 +142,35 @@
               hideTextBox();
             }
             console.log( snapshot.val().total)
+
           })
         
+        changeWord();
 
       
       }
 
       function add(){
         var name = $('#nameInput').val();
-        myDataRef.child("names").once('value',function(snapshot){
+        var didwork = 0
 
-          if (snapshot.val() == null){
-            names.child(name).set({upvotes : 1, downvotes : 0});
+        myDataRef.child("names").once('value',function(snapshot){
+          if (snapshot.child(name).val() == null){
+            names.child(name).set({upvotes : 1, downvotes : 0, weights : 1});
+            didwork = 1
+
           } else {
-            names.child(name).update({ upvotes : snapshot.child(name).val().upvotes + 1, 
-                                        downvotes : snapshot.child(name).val().downvotes});
+            var new_upvotes = snapshot.child(name).val().upvotes + 1;
+            var new_downvotes = snapshot.child(name).val().downvotes;
+
+            var weight = calculateWeight(new_upvotes,new_downvotes);
+            weight = 0;
+            names.child(name).update({ upvotes : new_upvotes, 
+                                        downvotes : new_downvotes,
+                                        weights : weight
+                                      });
           }
-          console.log(snapshot.val());  
+          //console.log(snapshot.val());  
         })
           myDataRef.child("overallcounter").once('value',function(snapshot){
             overallcounter.update({total : snapshot.val().total + 1});
@@ -149,10 +178,18 @@
               unhideTextBox();
             } else {
               hideTextBox();
-            }
-            console.log( snapshot.val().total)
+            }            
           })
-          
+          if (didwork == 1){
+            myDataRef.child("numElements").once('value',function(snapshot){
+            numElements.update({total : snapshot.val().total + 1});
+            console.log('numElements '+snapshot.val().total)
+          })
+          }
+        
+
+      changeWord();
+   
 
       
       }
@@ -160,12 +197,19 @@
         function voteDown(){
         var name = $('#nameInput').val();
         myDataRef.child("names").once('value',function(snapshot){
+          
 
           if (snapshot.val() == null){
-            names.child(name).set({upvotes : 0, downvotes : 1});
+            names.child(name).set({upvotes : 0, downvotes : 1, weights : 1});
           } else {
-            names.child(name).update({ upvotes : snapshot.child(name).val().upvotes, 
-                                        downvotes : snapshot.child(name).val().downvotes + 1 });
+            var new_upvotes = snapshot.child(name).val().upvotes;
+            var new_downvotes = snapshot.child(name).val().downvotes + 1;
+
+            var weight = calculateWeight(new_upvotes,new_downvotes);
+            weight = 0;
+            names.child(name).update({ upvotes : new_upvotes, 
+                                        downvotes : new_downvotes,
+                                        weights : weight });
           }
           console.log(snapshot.val());  
         })
@@ -178,6 +222,7 @@
             }
             console.log( snapshot.val().total)
           })
+        changeWord();
       }
 
       function hideTextBox(){
@@ -187,7 +232,27 @@
       function unhideTextBox(){
  
       }
-                        
+
+      function calculateWeight(){
+ 
+      }
+
+      function changeWord(){
+
+
+        var newWord = getRandomWord()
+        $("#nameToVoteOn").text(newWord);
+      }
+
+      function getRandomWord(){
+        var d = new Date();
+        var n = d.getTime();
+        //n mod num elements in database
+        //resulting index is new word
+        return 'hehehehehe';
+      }
+                   
+
       function displayChatMessage(name, upvotes, downvotes) {
         $('<div/>').text(downvotes).prepend($('<em/>').text(name+' Likes '+upvotes+' ')).appendTo($('#messagesDiv'));
         $('#messagesDiv')[0].scrollTop = $('#messagesDiv')[0].scrollHeight;
